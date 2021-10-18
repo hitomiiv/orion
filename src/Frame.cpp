@@ -107,11 +107,9 @@ void on_window_maximize_w(GLFWwindow* window, int maximized);
 void on_window_resize_w(GLFWwindow* window, int width, int height);
 void on_window_content_scale_w(GLFWwindow* window, float xscale, float yscale);
 
-void on_glfw_error(int error_code, const char* description)
+void on_glfw_error([[maybe_unused]] int error_code, const char* description)
 {
-	Logger::get().critical({"GLFW error {:d}: {}"}, error_code, description);
-	Logger::get().dump_backtrace();
-	std::abort();
+	Logger::get().error(description);
 }
 
 void on_key_w(GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, int mods)
@@ -238,6 +236,8 @@ FrameException::FrameException()
 
 Frame::Frame(int width, int height, std::string_view title)
 {
+	glfwSetErrorCallback(on_glfw_error);
+
 	// init glfw
 	GLFW::inc_ref_count();
 
@@ -261,7 +261,6 @@ Frame::Frame(int width, int height, std::string_view title)
 
 	// set callbacks
 	glfwSetWindowUserPointer(window, this);
-	glfwSetErrorCallback(on_glfw_error);
 	glfwSetKeyCallback(window, on_key_w);
 	glfwSetCharCallback(window, on_char_w);
 	glfwSetCharModsCallback(window, on_char_mods_w);
